@@ -1,0 +1,42 @@
+project:
+  type: website
+  output-dir: "docs"
+  render:
+    - "*.qmd"
+    - "!codelists_raw_qmds/"
+
+website:
+  title: "Clinical Codelists"
+  favicon: "coffee-cup.svg"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: codelists_listing.qmd
+        text: Codelists
+    right:
+      - icon: git
+        href: https://github.com/rmgpanw/codeminer_examples
+        aria-label: github_gitlab
+  repo-url: https://github.com/rmgpanw/codeminer_examples
+  repo-actions: [edit, issue]
+  repo-branch: main
+  reader-mode: true
+
+
+
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    css: styles.css
+    toc: true
+    code-fold: true
+    code-link: true
+    code-tools:
+      source: repo
+      toggle: true
+      caption: Code
+
+editor: source

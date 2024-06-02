@@ -1,0 +1,91 @@
+---
+title: "Statins"
+subtitle: "SNOMED CT"
+author: Alasdair Warwick
+categories: [SNOMED CT, Prescriptions]
+description: SNOMED prescription codes that map from BNF statin codes.
+date: 2024-06-02
+date-format: medium
+format:
+  html:
+    code-fold: true
+    code-link: true
+    embed-resources: true
+    code-tools:
+      source: true
+      toggle: true
+      caption: Code
+---
+
+```{r}
+#| message: false
+library(codemapper)
+library(dplyr)
+library(htmltools)
+
+options(list(codemapper.code_type = "sct", codemapper.map_to = "sct", 
+    codemapper.reverse_mapping = "warning", codemapper.unrecognised_codes_mapped = "warning", 
+    codemapper.unrecognised_codes_lookup = "error", codemapper.col_filters = list(
+        sct_description = list(active_concept = c("0", "1"), 
+            active_description = "1"), read_v2_icd10 = list(icd10_code_def = c("1", 
+        "15", "3", "5", "7", "8")), read_v2_read_ctv3 = list(
+            IS_ASSURED = "1"), read_ctv3_icd10 = list(mapping_status = c("E", 
+        "G", "D"), refine_flag = c("C", "P"), element_num = "0", 
+            block_num = "0"), read_ctv3_read_v2 = list(IS_ASSURED = "1"), 
+        rcsctmap2 = list(IS_ASSURED = "1", MapStatus = "1"), 
+        ctv3sctmap2 = list(IS_ASSURED = "1", MAPSTATUS = "1"))))
+```
+# Query
+
+Statin SNOMED codes were identified by:
+
+- Manually identifying 9 statins under BNF Chemical Substances, then mapping the children codes for these using the [NHS BSA BNF-SNOMED mapping file](https://www.nhsbsa.nhs.uk/prescription-data/understanding-our-data/bnf-snomed-mapping).
+
+::: {.column-screen-inset}
+```{r}
+#| code-fold: false
+#| output: false
+CHILDREN_MAPPED_BNF_STATIN_CHEMICAL_SUBSTANCES = MAP(CHILDREN("0212000AA << Rosuvastatin Calcium >> | 0212000AC << Simvastatin & Ezetimibe >> | 0212000AJ << Fenofibrate/Simvastatin >> | 0212000B0 << Atorvastatin >> | 0212000C0 << Cerivastatin >> | 0212000M0 << Fluvastatin Sodium >> | 0212000R0 << Lovastatin >> | 0212000X0 << Pravastatin Sodium >> | 0212000Y0 << Simvastatin >>", code_type = "bnf"))
+RESULT = CHILDREN_MAPPED_BNF_STATIN_CHEMICAL_SUBSTANCES
+```
+:::
+
+# Codelist
+
+::: {.column-screen-inset}
+
+```{r}
+# display interactive table with button to download as a csv file
+htmltools::browsable(
+  tagList(
+    tags$button(
+      tagList(fontawesome::fa("download"), "Download as CSV"),
+      onclick = "Reactable.downloadDataCSV('codelist-download', 'statins.csv')"
+    ),
+
+    reactable::reactable(
+      RESULT,
+      filterable = TRUE,
+      searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200),
+      elementId = "codelist-download"
+    )
+  )
+)
+```
+:::
+
+::: {.callout-note appearance="simple" collapse=true}
+
+## Session info
+
+Quarto version: `r quarto::quarto_version()`
+
+```{r}
+sessioninfo::session_info()
+```
+
+:::

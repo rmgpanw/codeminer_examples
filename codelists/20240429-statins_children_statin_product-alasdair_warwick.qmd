@@ -1,0 +1,91 @@
+---
+title: "Statins"
+subtitle: "SNOMED CT"
+author: Alasdair Warwick
+categories: [SNOMED CT, Prescriptions]
+description: SNOMED prescription codes that are children of `96302009`, "Substance with 3-hydroxy-3-methylglutaryl-coenzyme A reductase inhibitor mechanism of action (substance)".
+date: 2024-06-02
+date-format: medium
+format:
+  html:
+    code-fold: true
+    code-link: true
+    embed-resources: true
+    code-tools:
+      source: true
+      toggle: true
+      caption: Code
+---
+
+```{r}
+#| message: false
+library(codemapper)
+library(dplyr)
+library(htmltools)
+
+options(list(codemapper.code_type = "sct", codemapper.map_to = "sct", 
+    codemapper.reverse_mapping = "warning", codemapper.unrecognised_codes_mapped = "warning", 
+    codemapper.unrecognised_codes_lookup = "error", codemapper.col_filters = list(
+        sct_description = list(active_concept = c("0", "1"), 
+            active_description = "1"), read_v2_icd10 = list(icd10_code_def = c("1", 
+        "15", "3", "5", "7", "8")), read_v2_read_ctv3 = list(
+            IS_ASSURED = "1"), read_ctv3_icd10 = list(mapping_status = c("E", 
+        "G", "D"), refine_flag = c("C", "P"), element_num = "0", 
+            block_num = "0"), read_ctv3_read_v2 = list(IS_ASSURED = "1"), 
+        rcsctmap2 = list(IS_ASSURED = "1", MapStatus = "1"), 
+        ctv3sctmap2 = list(IS_ASSURED = "1", MAPSTATUS = "1"))))
+```
+# Query
+
+Statin SNOMED codes were identified by:
+
+- Children of statin-containing products (i.e. children of `96302009`, "Substance with 3-hydroxy-3-methylglutaryl-coenzyme A reductase inhibitor mechanism of action (substance)")
+
+::: {.column-screen-inset}
+```{r}
+#| code-fold: false
+#| output: false
+CHILDREN_PRODUCT_CONTAINING_STATIN = CHILDREN("96302009 << Product containing 3-hydroxy-3-methylglutaryl-coenzyme A reductase inhibitor (product) >>")
+RESULT = CHILDREN_PRODUCT_CONTAINING_STATIN
+```
+:::
+
+# Codelist
+
+::: {.column-screen-inset}
+
+```{r}
+# display interactive table with button to download as a csv file
+htmltools::browsable(
+  tagList(
+    tags$button(
+      tagList(fontawesome::fa("download"), "Download as CSV"),
+      onclick = "Reactable.downloadDataCSV('codelist-download', 'statins.csv')"
+    ),
+
+    reactable::reactable(
+      RESULT,
+      filterable = TRUE,
+      searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200),
+      elementId = "codelist-download"
+    )
+  )
+)
+```
+:::
+
+::: {.callout-note appearance="simple" collapse=true}
+
+## Session info
+
+Quarto version: `r quarto::quarto_version()`
+
+```{r}
+sessioninfo::session_info()
+```
+
+:::

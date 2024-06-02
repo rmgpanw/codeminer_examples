@@ -1,0 +1,7 @@
+---
+title: "Welcome"
+editor_options: 
+  chunk_output_type: console
+---
+
+Welcome to our example codelists website!

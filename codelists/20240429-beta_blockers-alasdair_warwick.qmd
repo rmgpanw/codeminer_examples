@@ -1,0 +1,109 @@
+---
+title: "Beta blockers"
+subtitle: "SNOMED CT"
+categories: [SNOMED CT, Prescriptions]
+description: Beta blocker-containing products, excluding eye drops.
+author: Alasdair Warwick
+date: 2024-04-29
+date-format: medium
+format:
+  html:
+    code-fold: true
+    code-link: true
+    embed-resources: true
+    code-tools:
+      source: true
+      toggle: true
+      caption: Code
+---
+
+```{r}
+#| message: false
+library(codemapper)
+library(dplyr)
+library(htmltools)
+
+options(list(codemapper.code_type = "sct", codemapper.map_to = "sct", 
+    codemapper.reverse_mapping = "warning", codemapper.unrecognised_codes_mapped = "warning", 
+    codemapper.unrecognised_codes_lookup = "error", codemapper.col_filters = list(
+        sct_description = list(active_concept = c("0", "1"), 
+            active_description = "1"), read_v2_icd10 = list(icd10_code_def = c("1", 
+        "15", "3", "5", "7", "8")), read_v2_read_ctv3 = list(
+            IS_ASSURED = "1"), read_ctv3_icd10 = list(mapping_status = c("E", 
+        "G", "D"), refine_flag = c("C", "P"), element_num = "0", 
+            block_num = "0"), read_ctv3_read_v2 = list(IS_ASSURED = "1"), 
+        rcsctmap2 = list(IS_ASSURED = "1", MapStatus = "1"), 
+        ctv3sctmap2 = list(IS_ASSURED = "1", MAPSTATUS = "1"))))
+```
+# Query
+
+Approach:
+
+- Codes where the active ingredient is a beta blocker
+- Exclude eye medications:
+
+  - Child codes for products manufactured as ocular dose (`440130005`, "Product manufactured as ocular dose form (product)")
+  - Codes with an ocular route or unit of administration
+  - A small selection of codes that were not excluded by the above, identified by manual review
+
+::: {.column-screen-inset}
+```{r}
+#| code-fold: false
+#| output: false
+CHILD_BETA_BLOCKER_SUBSTANCE = CHILDREN("373254001 << Substance with beta adrenergic receptor antagonist mechanism of action (substance) >>") # <1>
+ATTRIBUTES_HAS_INGREDIENT = CODES("127489000 << Has active ingredient (attribute) >> | 762949000 << Has precise active ingredient (attribute) >>") # <1>
+HAS_BETA_BLOCKER_SUBSTANCE = HAS_ATTRIBUTES(CHILD_BETA_BLOCKER_SUBSTANCE, relationship = ATTRIBUTES_HAS_INGREDIENT) # <1>
+CHILD_PRODUCTS_OCULAR_CODE_FORM = CHILDREN("440130005 << Product manufactured as ocular dose form (product) >>") # <2>
+EYE_MED_ATTRIBUTES = CODES("385276004 << Ocular dose form (dose form) >> | 385122009 << Conventional release eye gel (dose form) >> | 385124005 << Conventional release eye drops (dose form) >> | 420736004 << Conventional release eye suspension (dose form) >> | 422060001 << Conventional release eye solution (dose form) >> | 10693611000001100 << drop (qualifier value) >>") # <3>
+ATTRIBUTES_HAS_ROUTE_OR_UNIT_ADMINISTRATION = CODES("763032000 << Has unit of presentation (attribute) >> | 726542003 << Has disposition (attribute) >> | 411116001 << Has manufactured dose form (attribute) >> | 732943007 << Has basis of strength substance (attribute) >> | 732945000 << Has presentation strength numerator unit (attribute) >> | 732947008 << Has presentation strength denominator unit (attribute) >> | 733722007 << Has concentration strength denominator unit (attribute) >> | 10362901000001105 << Has dispensed dose form (attribute) >> | 13085501000001109 << Has unit of administration (attribute) >>") # <3>
+MEDS_WITH_EYE_ROUTE_OR_UNIT_ADMINISTRATION = HAS_ATTRIBUTES(EYE_MED_ATTRIBUTES, relationship = ATTRIBUTES_HAS_ROUTE_OR_UNIT_ADMINISTRATION) # <3>
+CODES_EYE_MEDS_WITH_PGD = CODES("424310002 << Product containing bimatoprost and timolol (medicinal product) >> | 424258009 << Product containing timolol and travoprost (medicinal product) >> | 774861009 << Product containing only bimatoprost and timolol (medicinal product) >> | 776482006 << Product containing only latanoprost and timolol (medicinal product) >> | 777774001 << Product containing only timolol and travoprost (medicinal product) >> | 776482006 << Latanoprost + Timolol (product) >> | 777774001 << Travoprost + Timolol (product) >> | 774861009 << Bimatoprost + Timolol (product) >> | 391662001 << Product containing latanoprost and timolol (medicinal product) >> | 29926111000001105 << Tafluprost + Timolol (product) >>") # <4>
+BETA_BLOCKERS_NOT_EYE_MEDS = HAS_BETA_BLOCKER_SUBSTANCE %NOT% (CHILD_PRODUCTS_OCULAR_CODE_FORM %OR% MEDS_WITH_EYE_ROUTE_OR_UNIT_ADMINISTRATION %OR% CODES_EYE_MEDS_WITH_PGD) # <5>
+RESULT = BETA_BLOCKERS_NOT_EYE_MEDS # <5>
+```
+1. Codes where the active ingredient is a beta blocker
+2. Child codes for products manufactured as ocular dose (`440130005`, "Product manufactured as ocular dose form (product)")
+3. Codes with an ocular route or unit of administration
+4. A small selection of codes that were not excluded by the above, identified by manual review
+5. Final codelist excludes eye medications (i.e. 1, but not 2, 3 & 4)
+:::
+
+# Codelist
+
+::: {.column-screen-inset}
+
+```{r}
+# display interactive table with button to download as a csv file
+htmltools::browsable(
+  tagList(
+    tags$button(
+      tagList(fontawesome::fa("download"), "Download as CSV"),
+      onclick = "Reactable.downloadDataCSV('codelist-download', 'beta_blockers2.csv')"
+    ),
+
+    reactable::reactable(
+      RESULT,
+      filterable = TRUE,
+      searchable = TRUE,
+      resizable = TRUE,
+      paginationType = "jump",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(10, 25, 50, 100, 200),
+      elementId = "codelist-download"
+    )
+  )
+)
+```
+:::
+
+::: {.callout-note appearance="simple" collapse=true}
+
+## Session info
+
+Quarto version: `r quarto::quarto_version()`
+
+```{r}
+sessioninfo::session_info()
+```
+
+:::

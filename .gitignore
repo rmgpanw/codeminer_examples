@@ -1,0 +1,16 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.Rapp.history
+.DS_Store
+.Renviron
+analysis/figure
+analysis/*png
+analysis/*html
+analysis/*_cache
+analysis/site_libs
+README.html
+/.quarto/
+_public/*
+_freeze/*
